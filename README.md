@@ -1,2 +1,13 @@
-# voyager
-Voyager will be a cinematic exploration RPG.
+# Voyager
+Voyager is a role-playing video game for Windows.
+
+# Controls
+Arrows: down, left, right, up
+
+Spacebar: attack
+
+Left control: cast
+
+q: change weapon
+
+e: change spell
