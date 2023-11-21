@@ -31,10 +31,12 @@ class Level():
         
         # sprite group setup
         self.visi_sprites = YSortCameraGroup()
-        self.ob_sprites = pygame.sprite.Group()
+        self.obstacle_sprites = pygame.sprite.Group()
 
         # attack sprites
         self.current_attack = None
+        self.attack_sprites = pygame.sprite.Group()
+        self.attackable_sprites = pygame.sprite.Group()
 
         # sprite setup
         self.create_map()
@@ -74,7 +76,7 @@ class Level():
 
                             Tile(
                                 (x, y),
-                                [self.ob_sprites],
+                                [self.obstacle_sprites],
                                 "invisible",
                                 surface = pygame.Surface((TILESIZE, TILESIZE))
                             )
@@ -84,7 +86,7 @@ class Level():
                             if col == "394":
 
                                 self.player = Player(
-                                    (x, y), [self.visi_sprites], self.ob_sprites,
+                                    (x, y), [self.visi_sprites], self.obstacle_sprites,
                                     self.create_attack, self.destroy_attack,
                                     self.create_magic
                                 )
@@ -107,7 +109,9 @@ class Level():
                                     monster_name = "squid"
 
                                 Enemy(
-                                    (x, y), [self.visi_sprites], self.ob_sprites,
+                                    (x, y),
+                                    [self.visi_sprites, self.attackable_sprites],
+                                    self.obstacle_sprites,
                                     monster_name
                                 )
                         
@@ -116,7 +120,11 @@ class Level():
                             random_grass_image = choice(graphics["grass"])
                             Tile(
                                 (x, y),
-                                [self.visi_sprites, self.ob_sprites],
+                                [
+                                    self.visi_sprites,
+                                    self.obstacle_sprites,
+                                    self.attackable_sprites
+                                ],
                                 "grass",
                                 random_grass_image
                             )
@@ -126,7 +134,7 @@ class Level():
                             surf = graphics["objects"][int(col)]
                             Tile(
                                 (x, y),
-                                [self.visi_sprites, self.ob_sprites],
+                                [self.visi_sprites, self.obstacle_sprites],
                                 "objects",
                                 surf
                             )
@@ -136,7 +144,9 @@ class Level():
         Create an attack for the player.
         """
 
-        self.current_attack = Weapon(self.player, [self.visi_sprites])
+        self.current_attack = Weapon(
+            self.player, [self.visi_sprites, self.attack_sprites]
+        )
     
     def create_magic(self, style, strength, cost):
 
