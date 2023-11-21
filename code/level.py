@@ -30,7 +30,7 @@ class Level():
             return
         
         # sprite group setup
-        self.visi_sprites = YSortCameraGroup()
+        self.visible_sprites = YSortCameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
 
         # attack sprites
@@ -86,7 +86,7 @@ class Level():
                             if col == "394":
 
                                 self.player = Player(
-                                    (x, y), [self.visi_sprites], self.obstacle_sprites,
+                                    (x, y), [self.visible_sprites], self.obstacle_sprites,
                                     self.create_attack, self.destroy_attack,
                                     self.create_magic
                                 )
@@ -110,7 +110,7 @@ class Level():
 
                                 Enemy(
                                     (x, y),
-                                    [self.visi_sprites, self.attackable_sprites],
+                                    [self.visible_sprites, self.attackable_sprites],
                                     self.obstacle_sprites,
                                     monster_name
                                 )
@@ -121,7 +121,7 @@ class Level():
                             Tile(
                                 (x, y),
                                 [
-                                    self.visi_sprites,
+                                    self.visible_sprites,
                                     self.obstacle_sprites,
                                     self.attackable_sprites
                                 ],
@@ -134,7 +134,7 @@ class Level():
                             surf = graphics["objects"][int(col)]
                             Tile(
                                 (x, y),
-                                [self.visi_sprites, self.obstacle_sprites],
+                                [self.visible_sprites, self.obstacle_sprites],
                                 "objects",
                                 surf
                             )
@@ -145,7 +145,7 @@ class Level():
         """
 
         self.current_attack = Weapon(
-            self.player, [self.visi_sprites, self.attack_sprites]
+            self.player, [self.visible_sprites, self.attack_sprites]
         )
     
     def create_magic(self, style, strength, cost):
@@ -164,15 +164,33 @@ class Level():
             self.current_attack.kill()
         self.current_attack = None
     
+    def player_attack_logic(self):
+
+        if self.attack_sprites:
+
+            for attack_sprite in self.attack_sprites:
+
+                remove_sprite = True
+                collision_sprites = pygame.sprite.spritecollide(
+                    attack_sprite, self.attackable_sprites, remove_sprite
+                )
+
+                if collision_sprites:
+
+                    for target_sprite in collision_sprites:
+
+                        target_sprite.kill()
+    
     def run(self):
         """
         Run the game loop.
         """
 
         # update and draw the game
-        self.visi_sprites.custom_draw(self.player)
-        self.visi_sprites.update()
-        self.visi_sprites.enemy_update(self.player)
+        self.visible_sprites.custom_draw(self.player)
+        self.visible_sprites.update()
+        self.visible_sprites.enemy_update(self.player)
+        self.player_attack_logic()
         self.ui.display(self.player)
 
 class YSortCameraGroup(pygame.sprite.Group):
