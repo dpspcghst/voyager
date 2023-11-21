@@ -179,7 +179,9 @@ class Level():
 
                     for target_sprite in collision_sprites:
 
-                        target_sprite.kill()
+                        if target_sprite.sprite_type = "grass":
+
+                            target_sprite.kill()
     
     def run(self):
         """
