@@ -10,7 +10,7 @@ class Game():
         # general setup
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Voyager (v2023.11.21.0.11.1)")
+        pygame.display.set_caption("Voyager (v2023.11.21.0.11.2)")
         self.clock = pygame.time.Clock()
 
         self.level = Level()
