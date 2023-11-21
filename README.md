@@ -1,5 +1,5 @@
 # Voyager
-Voyager is a role-playing video game for Windows.
+Voyager is an adventure video game for Windows.
 
 # Controls
 Arrows: down, left, right, up
