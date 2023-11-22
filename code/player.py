@@ -187,7 +187,9 @@ class Player(Entity):
 
         if self.attacking:
 
-            if current_time - self.attack_time >= self.attack_cooldown:
+            total_cooldown = self.attack_cooldown + weapon_data[self.weapon]["cooldown"]
+
+            if current_time - self.attack_time >= total_cooldown:
 
                 self.attacking = False
                 self.destroy_attack()
@@ -215,6 +217,13 @@ class Player(Entity):
         # set the image
         self.image = animation[int(self.frame_index)]
         self.rect = self.image.get_rect(center = self.hitbox.center)
+    
+    def get_full_weapon_damage(self):
+
+        base_damage = self.stats["attack"]
+        weapon_damage = weapon_data[self.weapon]["damage"]
+
+        return base_damage + weapon_damage
     
     def update(self):
 
