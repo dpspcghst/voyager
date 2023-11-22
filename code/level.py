@@ -170,7 +170,7 @@ class Level():
 
             for attack_sprite in self.attack_sprites:
 
-                remove_sprite = True
+                remove_sprite = False
                 collision_sprites = pygame.sprite.spritecollide(
                     attack_sprite, self.attackable_sprites, remove_sprite
                 )
@@ -179,9 +179,15 @@ class Level():
 
                     for target_sprite in collision_sprites:
 
-                        if target_sprite.sprite_type = "grass":
+                        if target_sprite.sprite_type == "grass":
 
                             target_sprite.kill()
+
+                        else:
+                            
+                            target_sprite.get_damage(
+                                self.player, attack_sprite.sprite_type
+                            )
     
     def run(self):
         """
