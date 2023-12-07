@@ -70,3 +70,20 @@ monster_data = {
         "notice_radius": 360, "resistance": 3, "speed": 3
     }
 }
+
+# achievements
+achievements = {
+    "The Alameter Line": 0,
+    "Corpus Callosum": 0,
+    "Feathers or Fur?": 0,
+    "The Lines of Alaise": 0,
+    "The Map to Heaven": 0,
+    "Only Way Is Through": 0,
+    "Pacifica": 0,
+    "Pacifica Redux": 0,
+    "Radio, Radio": 0,
+    "The Russian Breach": 0,
+    "Something New": 0,
+    "Stray Thread": 0,
+    "The Wall": 0
+}
