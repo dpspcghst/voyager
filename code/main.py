@@ -1,7 +1,7 @@
 import sys
 import pygame
 from level import Level
-from settings import WIDTH, HEIGHT, FPS
+from setting import WIDTH, HEIGHT, FPS
 
 class Game():
 
@@ -10,7 +10,7 @@ class Game():
         # general setup
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Voyager (v2023.11.21.0.11.4)")
+        pygame.display.set_caption("Voyager (v0.2.10.3)")
         self.clock = pygame.time.Clock()
 
         self.level = Level()
