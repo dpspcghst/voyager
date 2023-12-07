@@ -1,9 +1,11 @@
-from random import choice
+from random import choice, randint
 import pygame
 # from debug import debug
 from enemy import Enemy
+from magic import MagicPlayer
+from particles import AnimationPlayer
 from player import Player
-from settings import TILESIZE
+from setting import TILESIZE
 from support import import_csv_layout, import_folder
 from tile import Tile
 from ui import UI
@@ -44,6 +46,10 @@ class Level():
         # user interface
         self.ui = UI()
 
+        # particles
+        self.animation_player = AnimationPlayer()
+        self.magic_player = MagicPlayer(self.animation_player)
+
     def create_map(self):
         """
         Create the game map based on layouts and graphics.
@@ -78,7 +84,9 @@ class Level():
                                 (x, y),
                                 [self.obstacle_sprites],
                                 "invisible",
-                                surface = pygame.Surface((TILESIZE, TILESIZE))
+                                surface=pygame.Surface(
+                                    (TILESIZE, TILESIZE)
+                                )
                             )
 
                         if style == "entities":
@@ -86,8 +94,11 @@ class Level():
                             if col == "394":
 
                                 self.player = Player(
-                                    (x, y), [self.visible_sprites], self.obstacle_sprites,
-                                    self.create_attack, self.destroy_attack,
+                                    (x, y),
+                                    [self.visible_sprites],
+                                    self.obstacle_sprites,
+                                    self.create_attack,
+                                    self.destroy_attack,
                                     self.create_magic
                                 )
 
@@ -109,15 +120,20 @@ class Level():
                                     monster_name = "squid"
 
                                 Enemy(
+                                    monster_name,
                                     (x, y),
-                                    [self.visible_sprites, self.attackable_sprites],
+                                    [
+                                        self.visible_sprites,
+                                        self.attackable_sprites
+                                    ],
                                     self.obstacle_sprites,
-                                    monster_name
+                                    self.damage_player,
+                                    self.trigger_death_particles
                                 )
                         
                         if style == "grass":
 
-                            random_grass_image = choice(graphics["grass"])
+                            grass_image = choice(graphics["grass"])
                             Tile(
                                 (x, y),
                                 [
@@ -126,15 +142,18 @@ class Level():
                                     self.attackable_sprites
                                 ],
                                 "grass",
-                                random_grass_image
+                                grass_image
                             )
 
                         if style == "object":
-                            
+
                             surf = graphics["objects"][int(col)]
                             Tile(
                                 (x, y),
-                                [self.visible_sprites, self.obstacle_sprites],
+                                [
+                                    self.visible_sprites,
+                                    self.obstacle_sprites
+                                ],
                                 "objects",
                                 surf
                             )
@@ -147,13 +166,22 @@ class Level():
         self.current_attack = Weapon(
             self.player, [self.visible_sprites, self.attack_sprites]
         )
-    
+
     def create_magic(self, style, strength, cost):
 
-        print(style)
-        print(strength)
-        print(cost)
-    
+        if style == "heal":
+
+            self.magic_player.heal(
+                self.player, strength, cost, [self.visible_sprites]
+            )
+
+        if style == "flame":
+
+            self.magic_player.flame(
+                self.player, cost,
+                [self.visible_sprites, self.attack_sprites]
+            )
+
     def destroy_attack(self):
         """
         Destroy the current attack.
@@ -172,7 +200,8 @@ class Level():
 
                 remove_sprite = False
                 collision_sprites = pygame.sprite.spritecollide(
-                    attack_sprite, self.attackable_sprites, remove_sprite
+                    attack_sprite, self.attackable_sprites,
+                    remove_sprite
                 )
 
                 if collision_sprites:
@@ -181,6 +210,20 @@ class Level():
 
                         if target_sprite.sprite_type == "grass":
 
+                            pos = target_sprite.rect.center
+                            x_vector_coordinate = 0
+                            y_vector_coordinate = 75
+                            offset = pygame.math.Vector2(
+                                x_vector_coordinate,
+                                y_vector_coordinate
+                            )
+
+                            for leaf in range(randint(3, 6)):
+
+                                self.animation_player.create_grass_particles(
+                                    pos - offset,
+                                    [self.visible_sprites]
+                                )
                             target_sprite.kill()
 
                         else:
@@ -189,6 +232,24 @@ class Level():
                                 self.player, attack_sprite.sprite_type
                             )
     
+    def damage_player(self, amount, attack_type):
+
+        if self.player.vulnerable:
+
+            self.player.health -= amount
+            self.player.vulnerable = False
+            self.player.hurt_time = pygame.time.get_ticks()
+            self.animation_player.create_particles(
+                attack_type, self.player.rect.center,
+                [self.visible_sprites]
+            )
+
+    def trigger_death_particles(self, pos, particle_type):
+
+        self.animation_player.create_particles(
+            particle_type, pos, self.visible_sprites
+        )
+
     def run(self):
         """
         Run the game loop.
@@ -200,6 +261,7 @@ class Level():
         self.visible_sprites.enemy_update(self.player)
         self.player_attack_logic()
         self.ui.display(self.player)
+
 
 class YSortCameraGroup(pygame.sprite.Group):
     """
@@ -228,12 +290,15 @@ class YSortCameraGroup(pygame.sprite.Group):
 
         # creating the floor
         floor_image_path = "graphics/tilemap/ground.png"
-        self.floor_surf = pygame.image.load(floor_image_path).convert_alpha()
-        self.floor_rect = self.floor_surf.get_rect(topleft = (0,0))
+        self.floor_surf = pygame.image.load(
+            floor_image_path
+        ).convert_alpha()
+        self.floor_rect = self.floor_surf.get_rect(topleft=(0,0))
 
     def custom_draw(self, player):
         """
-        Draw sprites with Y-sorting and adjust the offset based on the player.
+        Draw sprites with Y-sorting and adjust the offset based on the
+        player.
         """
 
         # getting the offset
@@ -244,15 +309,17 @@ class YSortCameraGroup(pygame.sprite.Group):
         floor_offset_pos = self.floor_rect.topleft - self.offset
         self.display_surface.blit(self.floor_surf, floor_offset_pos)
 
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+        for sprite in sorted(
+            self.sprites(), key=lambda sprite: sprite.rect.centery
+        ):
 
             offset_pos = sprite.rect.topleft - self.offset
             self.display_surface.blit(sprite.image, offset_pos)
 
     def enemy_update(self, player):
 
-        # easily my least favorite line of code in this entire program
-        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite, "sprite_type") and sprite.sprite_type == "enemy"]
+        # long lines...
+        enemy_sprites = [sprite for sprite in self.sprites() if hasattr(sprite,'sprite_type') and sprite.sprite_type == 'enemy']
 
         for enemy in enemy_sprites:
 
