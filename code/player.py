@@ -1,20 +1,22 @@
 import pygame
 from entity import Entity
-from settings import magic_data, weapon_data
+from setting import magic_data, weapon_data
 from support import import_folder
 
 
 class Player(Entity):
-    
+
     def __init__(
-        self, pos, groups, obstacle_sprites, create_attack, destroy_attack,
-        create_magic
+        self, pos, groups, obstacle_sprites, create_attack,
+        destroy_attack, create_magic
     ):
 
         super().__init__(groups)
 
-        player_image_path = "graphics/test/player.png"
-        self.image = pygame.image.load(player_image_path).convert_alpha()
+        player_image_path = "graphics//player/down_idle/idle_down.png"
+        self.image = pygame.image.load(
+            player_image_path
+        ).convert_alpha()
         self.rect = self.image.get_rect(topleft=pos)
         self.hitbox = self.rect.inflate(0, -26)
 
@@ -46,27 +48,34 @@ class Player(Entity):
 
         # stats
         self.stats = {
-            "attack": 10, "energy": 60, "health": 100, "magic": 4, "speed": 5
+            "attack": 10, "energy": 60, "health": 100, "magic": 4,
+            "speed": 5
         }
-        self.energy = self.stats["energy"]
+        self.energy = self.stats["energy"] * 0.8
         self.exp = 123
-        self.health = self.stats["health"]
+        self.health = self.stats["health"] * 0.5
         self.speed = self.stats["speed"]
+
+        # damage timer
+        self.vulnerable = True
+        self.hit_time = None
+        self.invulnerability_duration = 500
 
     def import_player_assets(self):
 
         character_path = "graphics/player/"
         self.animations = {
             "down": [], "down_attack": [], "down_idle": [], "left": [],
-            "left_attack": [], "left_idle": [], "right": [], "right_attack": [],
-            "right_idle": [], "up": [], "up_attack": [], "up_idle": []
+            "left_attack": [], "left_idle": [], "right": [],
+            "right_attack": [], "right_idle": [], "up": [],
+            "up_attack": [], "up_idle": []
         }
 
         for animation in self.animations.keys():
 
             full_path = character_path + animation
             self.animations[animation] = import_folder(full_path)
-    
+
     def input(self):
 
         if not self.attacking:
@@ -74,7 +83,7 @@ class Player(Entity):
             keys = pygame.key.get_pressed()
 
             # movement input
-            
+
             if keys[pygame.K_DOWN]:
 
                 self.direction.y = 1
@@ -109,57 +118,64 @@ class Player(Entity):
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 self.create_attack()
-            
+
             # magic input
             if keys[pygame.K_LCTRL]:
 
                 self.attacking = True
                 self.attack_time = pygame.time.get_ticks()
                 style = list(magic_data.keys())[self.magic_index]
-                shortening = list(magic_data.values())[self.magic_index]
-                strength = shortening["strength"] + self.stats["magic"]
-                cost = shortening["cost"]
-                self.create_magic(style, strength, cost)
+                strength = list(magic_data.values())[self.magic_index]['strength'] + self.stats['magic']
+                cost = list(magic_data.values())[self.magic_index]['cost']
+                self.create_magic(style,strength,cost)
 
             if keys[pygame.K_q] and self.can_switch_weapon:
-                
+
                 self.can_switch_weapon = False
                 self.weapon_switch_time = pygame.time.get_ticks()
 
-                if self.weapon_index < len(list(weapon_data.keys())) - 1:
-                    
+                if self.weapon_index < len(
+                    list(weapon_data.keys())
+                ) - 1:
+
                     self.weapon_index += 1
 
                 else:
 
                     self.weapon_index = 0
 
-                self.weapon = list(weapon_data.keys())[self.weapon_index]
+                self.weapon = list(
+                    weapon_data.keys()
+                )[self.weapon_index]
 
             if keys[pygame.K_e] and self.can_switch_magic:
 
                 self.can_switch_magic = False
                 self.magic_switch_time = pygame.time.get_ticks()
-    
-                if self.magic_index < len(list(magic_data.keys())) - 1:
-    
+
+                if self.magic_index < len(
+                    list(magic_data.keys())
+                ) - 1:
+
                     self.magic_index += 1
-    
+
                 else:
-    
+
                     self.magic_index = 0
-    
-                self.magic = list(magic_data.keys())[self.magic_index]
+
+                self.magic = list(
+                    magic_data.keys()
+                )[self.magic_index]
 
     def get_status(self):
 
         # idle status
         if self.direction.x == 0 and self.direction.y == 0:
-            
+
             if "idle" not in self.status and "attack" not in self.status:
-                
+
                 self.status = self.status + "_idle"
-        
+
         if self.attacking:
 
             self.direction.x = 0
@@ -170,24 +186,27 @@ class Player(Entity):
                 if "idle" in self.status:
 
                     # overwrite idle
-                    self.status = self.status.replace("_idle", "_attack")
+                    self.status = self.status.replace(
+                        "_idle", "_attack"
+                    )
 
                 else:
                     self.status = self.status + "_attack"
-        
+
         else:
 
             if "attack" in self.status:
-                
+
                 self.status = self.status.replace("_attack", "")
-    
+
     def cooldowns(self):
 
         current_time = pygame.time.get_ticks()
 
         if self.attacking:
 
-            total_cooldown = self.attack_cooldown + weapon_data[self.weapon]["cooldown"]
+            weapon_cooldown = weapon_data[self.weapon]["cooldown"]
+            total_cooldown = self.attack_cooldown + weapon_cooldown
 
             if current_time - self.attack_time >= total_cooldown:
 
@@ -196,14 +215,28 @@ class Player(Entity):
 
         if not self.can_switch_weapon:
 
-            if current_time - self.weapon_switch_time >= self.switch_duration_cooldown:
+            time = current_time - self.weapon_switch_time
+
+            if time >= self.switch_duration_cooldown:
+
                 self.can_switch_weapon = True
 
         if not self.can_switch_magic:
 
-            if current_time - self.magic_switch_time >= self.switch_duration_cooldown:
+            time = current_time - self.magic_switch_time
+
+            if time >= self.switch_duration_cooldown:
+
                 self.can_switch_magic = True
-    
+
+        if not self.vulnerable:
+
+            time = current_time - self.vulnerable_time
+
+            if time >= self.invulnerability_duration:
+
+                self.vulnerable = True
+
     def animate(self):
 
         animation = self.animations[self.status]
@@ -213,18 +246,41 @@ class Player(Entity):
 
         if self.frame_index >= len(animation):
             self.frame_index = 0
-        
+
         # set the image
         self.image = animation[int(self.frame_index)]
-        self.rect = self.image.get_rect(center = self.hitbox.center)
-    
+        self.rect = self.image.get_rect(
+            center = self.hitbox.center
+        )
+
+        # flicker
+        if not self.vulnerable:
+
+            alpha = self.wave_value()
+            self.image.set_alpha(alpha)
+
+        else:
+
+            fully_opaque = 255
+            self.image.set_alpha(fully_opaque)
+
     def get_full_weapon_damage(self):
 
         base_damage = self.stats["attack"]
         weapon_damage = weapon_data[self.weapon]["damage"]
 
         return base_damage + weapon_damage
-    
+
+    def energy_recovery(self):
+
+        if self.energy < self.stats["energy"]:
+
+            self.energy += 0.01 * self.stats["magic"]
+
+        else:
+
+            self.enery = self.stats["energy"]
+
     def update(self):
 
         self.input()
@@ -232,3 +288,4 @@ class Player(Entity):
         self.get_status()
         self.animate()
         self.move(self.speed)
+        self.energy_recovery()
