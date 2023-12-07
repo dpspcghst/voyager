@@ -9,7 +9,7 @@ def import_csv_layout(path):
 
     with open(path) as level_map:
 
-        layout = reader(level_map, delimiter = ",")
+        layout = reader(level_map, delimiter=",")
         
         for row in layout:
 
