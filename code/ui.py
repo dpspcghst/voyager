@@ -1,5 +1,5 @@
 import pygame
-import settings as s
+import setting as s
 
 class UI():
 
@@ -70,7 +70,7 @@ class UI():
         offset = 20
         x = self.display_surface.get_size()[0] - offset
         y = self.display_surface.get_size()[1] - offset
-        text_rect = text_surf.get_rect(bottomright = (x, y))
+        text_rect = text_surf.get_rect(bottomright=(x, y))
 
         inflate_size = 20
         pygame.draw.rect(
@@ -108,14 +108,14 @@ class UI():
 
         bg_rect = self.selection_box(10, 630, has_switched)
         weapon_surf = self.weapon_graphics[weapon_index]
-        weapon_rect = weapon_surf.get_rect(center = bg_rect.center)
+        weapon_rect = weapon_surf.get_rect(center=bg_rect.center)
         self.display_surface.blit(weapon_surf, weapon_rect)
     
     def magic_overlay(self, magic_index, has_switched):
 
         bg_rect = self.selection_box(80, 635, has_switched)
         magic_surf = self.magic_graphics[magic_index]
-        magic_rect = magic_surf.get_rect(center = bg_rect.center)
+        magic_rect = magic_surf.get_rect(center=bg_rect.center)
         self.display_surface.blit(magic_surf, magic_rect)
     
     def display(self, player):
