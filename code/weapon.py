@@ -1,5 +1,6 @@
 import pygame
 
+
 class Weapon(pygame.sprite.Sprite):
     """
     """
@@ -15,29 +16,25 @@ class Weapon(pygame.sprite.Sprite):
         # graphic
         full_path = f"graphics/weapons/{player.weapon}/{direction}.png"
         self.image = pygame.image.load(full_path).convert_alpha()
-        
+
         # placement
         if direction == "down":
-            
-            self.rect = self.image.get_rect(
-                midtop = player.rect.midbottom + pygame.math.Vector2(-10, 0)
-            )
-        
+
+            self.rect = self.image.get_rect(midtop=player.rect.midbottom +
+                                            pygame.math.Vector2(-10, 0))
+
         elif direction == "left":
-            
-            self.rect = self.image.get_rect(
-                midright = player.rect.midleft + pygame.math.Vector2(0, 16)
-            )
-        
+
+            self.rect = self.image.get_rect(midright=player.rect.midleft +
+                                            pygame.math.Vector2(0, 16))
+
         elif direction == "right":
-            
-            self.rect = self.image.get_rect(
-                midleft = player.rect.midright + pygame.math.Vector2(0, 16)
-            )
+
+            self.rect = self.image.get_rect(midleft=player.rect.midright +
+                                            pygame.math.Vector2(0, 16))
 
         # direction == "up"
         else:
 
-            self.rect = self.image.get_rect(
-                midbottom = player.rect.midtop + pygame.math.Vector2(-10, 0)
-            )
+            self.rect = self.image.get_rect(midbottom=player.rect.midtop +
+                                            pygame.math.Vector2(-10, 0))
